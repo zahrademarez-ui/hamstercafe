@@ -3,986 +3,447 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hamsters Mania : Ultimate Edition</title>
+  <title>Hamster Café Tycoon : Deluxe ☕🐹</title>
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body {
-      margin: 0;
-      padding: 0;
-      background: #0f172a;
-      color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      user-select: none;
+      margin: 0; padding: 10px;
+      background: #2a1b12; color: #fff;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; user-select: none;
     }
 
     h1 {
-      margin: 5px 0;
-      color: #facc15;
-      font-size: 28px;
-      text-shadow: 2px 2px 0px #000;
-      letter-spacing: 1px;
+      margin: 5px 0 10px 0; color: #facc15;
+      font-size: 26px; text-shadow: 2px 2px 0 #000;
+      text-align: center;
     }
 
-    .game-container {
-      position: relative;
+    /* Tableau de bord */
+    .dashboard {
+      background: #432818; border: 3px solid #b45309; border-radius: 12px;
+      padding: 8px 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 10px; width: 100%; max-width: 900px;
+    }
+    .stat-badge {
+      font-size: 14px; font-weight: bold; background: #1a100a;
+      padding: 6px 12px; border-radius: 15px; border: 2px solid #facc15;
     }
 
-    canvas {
-      border: 4px solid #f43f5e;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      background: #000;
-      border-radius: 12px;
-      display: block;
+    .main-layout {
+      display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
+      max-width: 950px; width: 100%;
     }
 
-    /* UI Overlay */
-    .hud {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      right: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      pointer-events: none;
+    /* Le Café (Grille des Tables) */
+    .cafe-floor {
+      flex: 1; min-width: 300px; background: #6b4423;
+      border: 4px solid #d97706; border-radius: 15px; padding: 15px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+      align-content: start;
     }
 
-    .badge {
-      background: rgba(0, 0, 0, 0.75);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: bold;
-      color: #fff;
-      border: 2px solid #facc15;
+    .table-card {
+      background: #432818; border: 3px solid #855835; border-radius: 10px;
+      padding: 10px; display: flex; flex-direction: column; align-items: center;
+      justify-content: space-between; min-height: 160px; position: relative;
+    }
+    .table-card.locked {
+      background: rgba(26, 16, 10, 0.8); border-style: dashed; justify-content: center; opacity: 0.8;
     }
 
-    .btn-shop {
-      pointer-events: auto;
-      background: #f59e0b;
-      color: #000;
-      border: 2px solid #fff;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-      transition: transform 0.1s;
-    }
-    .btn-shop:hover { transform: scale(1.05); }
-
-    /* Jetpack Button */
-    .jetpack-btn {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      border: 3px solid #ffffff;
-      color: white;
-      font-weight: 900;
-      padding: 12px 20px;
-      border-radius: 50px;
-      cursor: pointer;
-      font-size: 15px;
-      box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
-      transition: transform 0.1s;
-    }
-    .jetpack-btn:active { transform: scale(0.92); }
-    .jetpack-btn.disabled {
-      background: #64748b;
-      border-color: #94a3b8;
-      cursor: not-allowed;
-      box-shadow: none;
-      opacity: 0.7;
-    }
-
-    /* Modal Boutique */
-    .modal {
-      display: none;
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.94);
-      border-radius: 12px;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      z-index: 10;
-    }
-    .modal h2 { margin: 0 0 5px 0; color: #facc15; }
+    .customer-info { font-size: 24px; text-align: center; }
+    .customer-name { font-size: 11px; color: #fef08a; font-weight: bold; text-align: center; }
     
-    .boost-section {
-      background: #1e293b;
-      border: 2px solid #f59e0b;
-      border-radius: 10px;
-      padding: 10px;
-      width: 100%;
-      max-width: 320px;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .timer-bar-container {
+      width: 100%; height: 6px; background: #1a100a; border-radius: 3px; overflow: hidden; margin: 4px 0;
+    }
+    .timer-bar { height: 100%; background: #22c55e; width: 100%; transition: width 0.2s linear; }
+
+    .order-bubble {
+      background: #fff; color: #000; padding: 4px 8px; border-radius: 12px;
+      font-size: 11px; font-weight: bold; margin: 4px 0; border: 2px solid #f59e0b; text-align: center;
     }
 
-    .skin-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-      max-width: 320px;
+    .btn-action {
+      background: #22c55e; color: white; border: none; padding: 6px 12px;
+      border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 12px;
+      box-shadow: 0 3px 0 #15803d; width: 100%; transition: transform 0.1s;
     }
-    .skin-card {
-      background: #334155;
-      border: 2px solid #475569;
-      padding: 8px 12px;
-      border-radius: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .btn-action:active { transform: translateY(2px); box-shadow: 0 1px 0 #15803d; }
+    .btn-unlock { background: #f59e0b; box-shadow: 0 3px 0 #b45309; color: #000; }
+
+    /* Panneau d'Améliorations */
+    .shop-panel {
+      flex: 1; min-width: 300px; background: #1a100a;
+      border: 4px solid #f59e0b; border-radius: 15px; padding: 12px;
+      max-height: 520px; overflow-y: auto;
     }
-    .skin-card.active { border-color: #22c55e; background: #1e293b; }
-    .skin-info { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: bold; }
-    .btn-buy {
-      background: #22c55e;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
+    .shop-panel h2 { margin: 0 0 8px 0; color: #facc15; font-size: 16px; border-bottom: 2px solid #432818; padding-bottom: 4px; }
+
+    .upgrade-card {
+      background: #2a1b12; border: 2px solid #6b4423; border-radius: 8px;
+      padding: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
     }
-    .btn-buy.equipped { background: #64748b; cursor: default; }
-    .btn-close {
-      margin-top: 15px;
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
+    .upgrade-title { font-weight: bold; color: #fff; font-size: 13px; }
+    .upgrade-desc { font-size: 10px; color: #cbd5e1; }
+
+    .prestige-box {
+      background: linear-gradient(135deg, #7c2d12, #9a3412);
+      border: 2px solid #f87171; border-radius: 10px; padding: 10px; margin-bottom: 12px; text-align: center;
     }
 
-    .credits-bar { margin-top: 10px; font-size: 14px; color: #facc15; font-weight: bold; }
-    .controls-hint { margin-top: 5px; font-size: 12px; color: #cbd5e1; }
+    .floating-text {
+      position: absolute; color: #facc15; font-weight: bold; font-size: 16px;
+      pointer-events: none; animation: floatUp 1s ease-out forwards; text-shadow: 1px 1px 2px #000;
+    }
+    @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-25px); } }
+
+    .footer-credits { margin-top: 10px; color: #facc15; font-size: 12px; font-weight: bold; text-align: center; }
   </style>
 </head>
 <body>
 
-  <h1>🐹 HAMSTERS MANIA 🥤</h1>
-  
-  <div class="game-container">
-    <canvas id="gameCanvas" width="420" height="600"></canvas>
-    
-    <div class="hud">
-      <div class="badge" id="scoreText">SCORE: 0m</div>
-      <div class="badge" id="miamText">🌾 0 Miam</div>
-      <button class="btn-shop" onclick="toggleShop()">🛍️ Shop</button>
-    </div>
+  <h1>🐹 HAMSTER CAFÉ TYCOON : DELUXE ☕</h1>
 
-    <button id="jetpackBtn" class="jetpack-btn">🥤 SODA MENTOS (2/2)</button>
+  <div class="dashboard">
+    <div class="stat-badge" id="miamDisplay">🌾 0 Miams</div>
+    <div class="stat-badge" id="reputationDisplay">⭐ Rep: 1.0x</div>
+    <div class="stat-badge" id="prestigeDisplay">👑 Prestige: 0</div>
+  </div>
 
-    <!-- Modal Boutique -->
-    <div id="shopModal" class="modal">
-      <h2>🛍️ BOUTIQUE & BOOSTS</h2>
-      <p id="modalMiamCount" style="color: #facc15; font-weight: bold; margin-bottom: 10px;">🌾 Tes Miams: 0</p>
+  <div class="main-layout">
+    <!-- Vue du Café -->
+    <div class="cafe-floor" id="cafeFloor"></div>
 
-      <!-- Section Boost 2x -->
-      <div class="boost-section">
-        <div>
-          <div style="font-weight: bold; color: #facc15;">⚡ Multiplicateur x2</div>
-          <div style="font-size: 11px; color: #cbd5e1;">Double tous les Miams gagnés !</div>
-        </div>
-        <button id="btnBuyDouble" class="btn-buy" onclick="buyDoubleMiam()">Acheter (100 🌾)</button>
-      </div>
+    <!-- Boutique -->
+    <div class="shop-panel">
+      <!-- Section Prestige -->
+      <div id="prestigeContainer"></div>
 
-      <div class="skin-list" id="skinListContainer"></div>
-      <button class="btn-close" onclick="toggleShop()">Fermer</button>
+      <h2>📜 RECETTES GOURMANDES</h2>
+      <div id="recipesContainer"></div>
+
+      <h2>🤖 PERSONNEL & AMÉLIORATIONS</h2>
+      <div id="upgradesContainer"></div>
     </div>
   </div>
 
-  <div class="credits-bar">Jeu réalisé par Adam Demarez !</div>
-  <div class="controls-hint">Contrôles : <kbd>Q</kbd> / <kbd>D</kbd> pour bouger | <kbd>ESPACE</kbd> Jetpack | <kbd>↑</kbd> Laser (Boss) | <kbd>R</kbd> Revive</div>
+  <div class="footer-credits">Jeu développé par Adam Demarez !</div>
 
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const jetpackBtn = document.getElementById('jetpackBtn');
-    const scoreText = document.getElementById('scoreText');
-    const miamText = document.getElementById('miamText');
-    const shopModal = document.getElementById('shopModal');
+    // --- ÉTAT DU JEU (Sauvegarde LocalStorage) ---
+    let miams = parseInt(localStorage.getItem('hc_miams') || '10');
+    let reputation = parseFloat(localStorage.getItem('hc_rep') || '1.0');
+    let prestigeCount = parseInt(localStorage.getItem('hc_prestige') || '0');
+    let autoBaristaUnlocked = JSON.parse(localStorage.getItem('hc_barista') || 'false');
+    let maxTables = parseInt(localStorage.getItem('hc_max_tables') || '4');
 
-    let gameState = 'PLAYING'; // PLAYING, GAMEOVER, CINEMATIC
-    let score = 0;
-    let cameraY = 0;
-    let hasRevivedThisRun = false;
-    let cinematicTimer = 0;
-
-    let miamTotal = parseInt(localStorage.getItem('hamster_miams') || '0');
-    let highScore = parseInt(localStorage.getItem('hamster_highscore') || '0');
-    let doubleMiamUnlocked = JSON.parse(localStorage.getItem('hamster_double_miams') || 'false');
-
-    // SKINS
-    const SKINS = [
-      { id: 'hamster', name: 'Hamster', icon: '🐹', price: 0, color: '#d97706' },
-      { id: 'chat', name: 'Chat', icon: '🐱', price: 10, color: '#475569' },
-      { id: 'chien', name: 'Chien', icon: '🐶', price: 20, color: '#b45309' },
-      { id: 'lapin', name: 'Lapin', icon: '🐰', price: 30, color: '#f472b6' }
+    // Recettes enrichies (8 au total)
+    const RECIPES = [
+      { id: 'graines', name: '🌾 Graines Grillées', price: 0, reward: 3, unlocked: true, icon: '🌾' },
+      { id: 'latte', name: '☕ Latte Tournesol', price: 25, reward: 9, unlocked: JSON.parse(localStorage.getItem('hc_rec_latte') || 'false'), icon: '☕' },
+      { id: 'brioche', name: '🥐 Brioche Noisette', price: 75, reward: 26, unlocked: JSON.parse(localStorage.getItem('hc_rec_brioche') || 'false'), icon: '🥐' },
+      { id: 'popcorn', name: '🍿 Pop-Corn Croustillant', price: 160, reward: 55, unlocked: JSON.parse(localStorage.getItem('hc_rec_popcorn') || 'false'), icon: '🍿' },
+      { id: 'bubble', name: '🧋 Bubble Tea Cacahuète', price: 320, reward: 115, unlocked: JSON.parse(localStorage.getItem('hc_rec_bubble') || 'false'), icon: '🧋' },
+      { id: 'gateau', name: '🍰 Gâteau au Miel', price: 700, reward: 250, unlocked: JSON.parse(localStorage.getItem('hc_rec_gateau') || 'false'), icon: '🍰' },
+      { id: 'smoothie', name: '🥤 Smoothie de Luxe', price: 1500, reward: 580, unlocked: JSON.parse(localStorage.getItem('hc_rec_smoothie') || 'false'), icon: '🥤' },
+      { id: 'festin', name: '👑 Festin Royal de Noix', price: 3500, reward: 1400, unlocked: JSON.parse(localStorage.getItem('hc_rec_festin') || 'false'), icon: '👑' }
     ];
 
-    let unlockedSkins = JSON.parse(localStorage.getItem('hamster_unlocked_skins') || '["hamster"]');
-    let currentSkin = localStorage.getItem('hamster_current_skin') || 'hamster';
+    // Clients normaux et VIP
+    const CUSTOMER_TYPES = [
+      { name: 'Hamster Gourmet', icon: '🐹', multiplier: 1, vip: false },
+      { name: 'Hamster Hipster', icon: '🐹', multiplier: 1, vip: false },
+      { name: 'Lapin Gourmand', icon: '🐰', multiplier: 1.2, vip: false },
+      { name: 'Souris Élégante', icon: '🐭', multiplier: 1.3, vip: false },
+      { name: '👑 Hamster VIP Royal', icon: '🦁🐹', multiplier: 3.5, vip: true }
+    ];
 
-    const keys = {};
-    const particles = [];
-    const platforms = [];
-    const seeds = [];
-    const lasers = [];
-    const stars = [];
-    const fireworks = [];
-
-    // Générer les étoiles
-    for(let i = 0; i < 70; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 1,
-        alpha: Math.random()
-      });
-    }
-
-    // --- BOSS LUNE ---
-    const boss = {
-      active: false,
-      hp: 3,
-      timer: 25.0,
-      x: 210,
-      y: 0,
-      radius: 55,
-      flashTimer: 0,
-      
-      reset() {
-        this.active = false;
-        this.hp = 3;
-        this.timer = 25.0;
-        this.flashTimer = 0;
+    // Tables (jusqu'à 6 max après prestige)
+    let tables = [];
+    function initTables() {
+      tables = [];
+      const costs = [0, 0, 40, 120, 300, 750];
+      for (let i = 0; i < maxTables; i++) {
+        tables.push({
+          id: i,
+          unlocked: i < 2 || (i < 4 && maxTables >= 4),
+          unlockCost: costs[i] || 500,
+          customer: null
+        });
       }
-    };
+    }
+    initTables();
 
-    let laserCooldown = 0;
-
-    window.addEventListener('keydown', e => {
-      const k = e.key.toLowerCase();
-      keys[k] = true;
-      keys[e.code] = true;
-
-      if (e.code === 'Space') useJetpack();
-      if (e.code === 'ArrowUp' || k === 'z') shootLaser();
-
-      if (gameState === 'GAMEOVER') {
-        if (e.code === 'KeyR' || k === 'r') revivePlayer();
-        else if (e.code === 'Space' || e.code === 'Enter') resetGame();
-      } else if (gameState === 'CINEMATIC' && (e.code === 'Space' || e.code === 'Enter')) {
-        resetGame();
-      }
-    });
-
-    window.addEventListener('keyup', e => {
-      const k = e.key.toLowerCase();
-      keys[k] = false;
-      keys[e.code] = false;
-    });
-
-    jetpackBtn.addEventListener('click', useJetpack);
-
-    function saveData() {
-      localStorage.setItem('hamster_miams', miamTotal);
-      localStorage.setItem('hamster_highscore', highScore);
-      localStorage.setItem('hamster_unlocked_skins', JSON.stringify(unlockedSkins));
-      localStorage.setItem('hamster_current_skin', currentSkin);
-      localStorage.setItem('hamster_double_miams', JSON.stringify(doubleMiamUnlocked));
-      updateHUD();
+    function saveGame() {
+      localStorage.setItem('hc_miams', miams);
+      localStorage.setItem('hc_rep', reputation);
+      localStorage.setItem('hc_prestige', prestigeCount);
+      localStorage.setItem('hc_barista', autoBaristaUnlocked);
+      localStorage.setItem('hc_max_tables', maxTables);
+      RECIPES.forEach(r => localStorage.setItem(`hc_rec_${r.id}`, r.unlocked));
     }
 
-    function updateHUD() {
-      miamText.innerText = `🌾 ${miamTotal} Miam ${doubleMiamUnlocked ? '(x2)' : ''}`;
+    function updateUI() {
+      document.getElementById('miamDisplay').innerText = `🌾 ${Math.floor(miams)} Miams`;
+      document.getElementById('reputationDisplay').innerText = `⭐ Rep: ${reputation.toFixed(1)}x`;
+      document.getElementById('prestigeDisplay').innerText = `👑 Prestige: ${prestigeCount}`;
+      renderPrestige();
+      renderShop();
+      renderTables();
+      saveGame();
     }
 
-    function toggleShop() {
-      if (shopModal.style.display === 'flex') {
-        shopModal.style.display = 'none';
-        if (gameState === 'GAMEOVER' || gameState === 'CINEMATIC') resetGame();
+    function renderPrestige() {
+      const container = document.getElementById('prestigeContainer');
+      if (miams >= 500 || prestigeCount > 0) {
+        container.innerHTML = `
+          <div class="prestige-box">
+            <div style="font-weight:bold; color:#f87171; font-size:13px;">🌀 RENAISSANCE (PRESTIGE)</div>
+            <div style="font-size:10px; color:#cbd5e1; margin:3px 0;">Remet les miams à 0 mais débloque 6 places max et +0.5x de réputation permanente !</div>
+            <button class="btn-action" style="background:#dc2626;" onclick="doPrestige()">Faire une Renaissance (500 🌾)</button>
+          </div>
+        `;
       } else {
-        renderShop();
-        shopModal.style.display = 'flex';
+        container.innerHTML = '';
       }
     }
 
-    function renderShop() {
-      document.getElementById('modalMiamCount').innerText = `🌾 Tes Miams: ${miamTotal}`;
-      const btnDouble = document.getElementById('btnBuyDouble');
-
-      if (doubleMiamUnlocked) {
-        btnDouble.className = 'btn-buy equipped';
-        btnDouble.innerText = '⚡ ACTIF (x2)';
-        btnDouble.onclick = null;
-      } else {
-        btnDouble.className = 'btn-buy';
-        btnDouble.innerText = 'Acheter (100 🌾)';
-        btnDouble.onclick = buyDoubleMiam;
+    function doPrestige() {
+      if (miams >= 500) {
+        if (confirm('Es-tu sûr de vouloir recommencer ton café avec des avantages légendaires ?')) {
+          miams = 10;
+          prestigeCount++;
+          reputation += 0.5;
+          maxTables = 6;
+          autoBaristaUnlocked = false;
+          RECIPES.forEach((r, idx) => r.unlocked = idx === 0);
+          initTables();
+          updateUI();
+        }
       }
+    }
 
-      const container = document.getElementById('skinListContainer');
+    function renderTables() {
+      const container = document.getElementById('cafeFloor');
       container.innerHTML = '';
 
-      SKINS.forEach(skin => {
-        const isUnlocked = unlockedSkins.includes(skin.id);
-        const isEquipped = currentSkin === skin.id;
-
+      tables.forEach(table => {
         const card = document.createElement('div');
-        card.className = `skin-card ${isEquipped ? 'active' : ''}`;
+        card.className = `table-card ${table.unlocked ? '' : 'locked'}`;
 
-        let btnHTML = '';
-        if (isEquipped) {
-          btnHTML = `<button class="btn-buy equipped">Équipé</button>`;
-        } else if (isUnlocked) {
-          btnHTML = `<button class="btn-buy" onclick="selectSkin('${skin.id}')">Mettre</button>`;
+        if (!table.unlocked) {
+          card.innerHTML = `
+            <div style="font-size:11px; font-weight:bold; margin-bottom:6px;">Table #${table.id + 1}</div>
+            <button class="btn-action btn-unlock" onclick="unlockTable(${table.id})">Débloquer (${table.unlockCost} 🌾)</button>
+          `;
+        } else if (table.customer) {
+          const c = table.customer;
+          const pct = (c.timeLeft / c.maxTime) * 100;
+          let barColor = '#22c55e';
+          if (c.timeLeft < 15) barColor = '#ef4444'; // Alerte dans les 15 dernières secondes
+
+          let actionHTML = '';
+          if (c.state === 'waiting') {
+            actionHTML = `<button class="btn-action" onclick="serveCustomer(${table.id})">Servir !</button>`;
+          } else {
+            actionHTML = `<div style="font-size:11px; color:#22c55e; font-weight:bold; text-align:center;">Dégustation...</div>`;
+          }
+
+          card.innerHTML = `
+            <div class="customer-info">${c.icon}</div>
+            <div class="customer-name">${c.name}</div>
+            <div class="timer-bar-container"><div class="timer-bar" style="width: ${pct}%; background: ${barColor};"></div></div>
+            <div class="order-bubble">${c.order.icon} ${c.order.name}</div>
+            ${actionHTML}
+          `;
         } else {
-          btnHTML = `<button class="btn-buy" onclick="buySkin('${skin.id}', ${skin.price})">Acheter (${skin.price} 🌾)</button>`;
+          card.innerHTML = `
+            <div style="font-size:11px; color:#d97706; font-weight:bold;">Table Libre</div>
+            <div style="font-size:24px; opacity:0.3;">🪑</div>
+          `;
         }
 
-        card.innerHTML = `
-          <div class="skin-info">
-            <span>${skin.icon}</span>
-            <span>${skin.name}</span>
-          </div>
-          ${btnHTML}
-        `;
         container.appendChild(card);
       });
     }
 
-    function buyDoubleMiam() {
-      if (!doubleMiamUnlocked && miamTotal >= 100) {
-        miamTotal -= 100;
-        doubleMiamUnlocked = true;
-        saveData();
-        renderShop();
-      } else if (miamTotal < 100) {
-        alert('Il te faut 100 Miams pour débloquer le Boost x2 !');
+    function renderShop() {
+      // Recettes
+      const recipesContainer = document.getElementById('recipesContainer');
+      recipesContainer.innerHTML = '';
+
+      RECIPES.forEach(r => {
+        if (!r.unlocked) {
+          const card = document.createElement('div');
+          card.className = 'upgrade-card';
+          card.innerHTML = `
+            <div>
+              <div class="upgrade-title">${r.icon} ${r.name}</div>
+              <div class="upgrade-desc">Rapporte +${r.reward} 🌾</div>
+            </div>
+            <button class="btn-action btn-unlock" onclick="buyRecipe('${r.id}')">${r.price} 🌾</button>
+          `;
+          recipesContainer.appendChild(card);
+        }
+      });
+
+      if (recipesContainer.children.length === 0) {
+        recipesContainer.innerHTML = '<div style="font-size:11px; color:#22c55e;">Toutes les recettes sont débloquées ! 🌟</div>';
+      }
+
+      // Améliorations
+      const upgradesContainer = document.getElementById('upgradesContainer');
+      upgradesContainer.innerHTML = '';
+
+      if (!autoBaristaUnlocked) {
+        upgradesContainer.innerHTML = `
+          <div class="upgrade-card">
+            <div>
+              <div class="upgrade-title">🤖 Robot Barista</div>
+              <div class="upgrade-desc">Sert tes clients automatiquement !</div>
+            </div>
+            <button class="btn-action btn-unlock" onclick="buyBarista()">1067 🌾</button>
+          </div>
+        `;
+      } else {
+        upgradesContainer.innerHTML = `<div style="font-size:11px; color:#22c55e;">🤖 Robot Barista actif !</div>`;
       }
     }
 
-    function buySkin(id, price) {
-      if (miamTotal >= price) {
-        miamTotal -= price;
-        unlockedSkins.push(id);
-        currentSkin = id;
-        saveData();
-        renderShop();
+    function unlockTable(id) {
+      const table = tables.find(t => t.id === id);
+      if (table && miams >= table.unlockCost) {
+        miams -= table.unlockCost;
+        table.unlocked = true;
+        updateUI();
       } else {
         alert('Pas assez de Miams !');
       }
     }
 
-    function selectSkin(id) {
-      currentSkin = id;
-      saveData();
-      renderShop();
-    }
-
-    function revivePlayer() {
-      if (!hasRevivedThisRun && miamTotal >= 50) {
-        miamTotal -= 50;
-        hasRevivedThisRun = true;
-        saveData();
-
-        const safeY = cameraY + 350;
-        const safePlatform = new Platform(canvas.width / 2 - 35, safeY);
-        platforms.push(safePlatform);
-
-        hamster.x = canvas.width / 2;
-        hamster.y = safeY - hamster.radius - 10;
-        hamster.vy = -12;
-        gameState = 'PLAYING';
-      }
-    }
-
-    // --- HAMSTER ---
-    const hamster = {
-      x: 210,
-      y: 400,
-      radius: 18,
-      vx: 0,
-      vy: 0,
-      rotation: 0,
-      isGrounded: false,
-      jetpackCharges: 2,
-      jetpackActiveTimer: 0,
-
-      reset() {
-        this.x = 210;
-        this.y = 400;
-        this.vx = 0;
-        this.vy = -10;
-        this.rotation = 0;
-        this.jetpackCharges = 2;
-        this.jetpackActiveTimer = 0;
-        updateJetpackUI();
-      },
-
-      update() {
-        if (keys['q'] || keys['ArrowLeft']) this.vx = -6;
-        else if (keys['d'] || keys['ArrowRight']) this.vx = 6;
-        else this.vx *= 0.82;
-
-        if (this.jetpackActiveTimer > 0) {
-          this.vy = -14;
-          this.jetpackActiveTimer--;
-
-          for (let i = 0; i < 4; i++) {
-            particles.push(new BubbleParticle(
-              this.x + (Math.random() - 0.5) * 20,
-              this.y + this.radius,
-              (Math.random() - 0.5) * 4,
-              Math.random() * 6 + 4
-            ));
-          }
-        } else {
-          this.vy += 0.45;
-        }
-
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (this.x < -this.radius) this.x = canvas.width + this.radius;
-        if (this.x > canvas.width + this.radius) this.x = -this.radius;
-
-        if (!this.isGrounded) {
-          this.rotation += this.vx * 0.08 + (this.vy < 0 ? -0.1 : 0.1);
-        } else {
-          this.rotation = 0;
-        }
-      },
-
-      draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y - cameraY);
-        const skinData = SKINS.find(s => s.id === currentSkin) || SKINS[0];
-
-        if (!this.isGrounded || this.jetpackActiveTimer > 0) {
-          ctx.rotate(this.rotation);
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(0, 0, this.radius + 4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = skinData.color;
-          ctx.beginPath();
-          ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-          ctx.fill();
-
-          if (currentSkin === 'chat') {
-            ctx.fillStyle = '#fb7185';
-            ctx.beginPath(); ctx.arc(-10, -12, 4, 0, Math.PI * 2); ctx.arc(10, -12, 4, 0, Math.PI * 2); ctx.fill();
-          } else if (currentSkin === 'chien') {
-            ctx.fillStyle = '#78350f';
-            ctx.beginPath(); ctx.arc(-12, -8, 6, 0, Math.PI * 2); ctx.arc(12, -8, 6, 0, Math.PI * 2); ctx.fill();
-          } else if (currentSkin === 'lapin') {
-            ctx.fillStyle = '#fce7f3';
-            ctx.beginPath(); ctx.arc(-8, -15, 6, 0, Math.PI * 2); ctx.arc(8, -15, 6, 0, Math.PI * 2); ctx.fill();
-          } else {
-            ctx.fillStyle = '#f43f5e';
-            ctx.beginPath(); ctx.arc(-10, -10, 4, 0, Math.PI * 2); ctx.arc(10, -10, 4, 0, Math.PI * 2); ctx.fill();
-          }
-
-          ctx.fillStyle = '#fef3c7';
-          ctx.beginPath(); ctx.arc(0, 3, this.radius * 0.6, 0, Math.PI * 2); ctx.fill();
-
-          ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(-6, -2, 3, 0, Math.PI, true); ctx.arc(6, -2, 3, 0, Math.PI, true); ctx.stroke();
-
-        } else {
-          if (currentSkin === 'chat') {
-            ctx.strokeStyle = skinData.color; ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.moveTo(-12, 5); ctx.quadraticCurveTo(-22, -5, -18, -15); ctx.stroke();
-          } else if (currentSkin === 'chien') {
-            ctx.strokeStyle = skinData.color; ctx.lineWidth = 5;
-            ctx.beginPath(); ctx.moveTo(-12, 5); ctx.lineTo(-20, -2); ctx.stroke();
-          } else if (currentSkin === 'lapin') {
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath(); ctx.arc(-16, 5, 6, 0, Math.PI * 2); ctx.fill();
-          }
-
-          ctx.fillStyle = skinData.color;
-          ctx.beginPath(); ctx.ellipse(0, 0, this.radius + 2, this.radius, 0, 0, Math.PI * 2); ctx.fill();
-
-          ctx.fillStyle = (currentSkin === 'lapin') ? '#ffffff' : '#fef3c7';
-          ctx.beginPath(); ctx.ellipse(0, 4, this.radius * 0.7, this.radius * 0.6, 0, 0, Math.PI * 2); ctx.fill();
-
-          if (currentSkin === 'hamster') {
-            ctx.fillStyle = '#f43f5e';
-            ctx.beginPath(); ctx.arc(-12, -14, 5, 0, Math.PI * 2); ctx.arc(12, -14, 5, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#fda4af';
-            ctx.beginPath(); ctx.arc(-10, 2, 5, 0, Math.PI * 2); ctx.arc(10, 2, 5, 0, Math.PI * 2); ctx.fill();
-          } else if (currentSkin === 'chat') {
-            ctx.fillStyle = skinData.color;
-            ctx.beginPath(); ctx.moveTo(-16, -6); ctx.lineTo(-10, -22); ctx.lineTo(-3, -6); ctx.moveTo(16, -6); ctx.lineTo(10, -22); ctx.lineTo(3, -6); ctx.fill();
-            ctx.fillStyle = '#fb7185';
-            ctx.beginPath(); ctx.moveTo(-14, -8); ctx.lineTo(-10, -18); ctx.lineTo(-5, -8); ctx.moveTo(14, -8); ctx.lineTo(10, -18); ctx.lineTo(5, -8); ctx.fill();
-            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-20, -3); ctx.moveTo(-8, 3); ctx.lineTo(-18, 5); ctx.moveTo(8, 0); ctx.lineTo(20, -3); ctx.moveTo(8, 3); ctx.lineTo(18, 5); ctx.stroke();
-          } else if (currentSkin === 'chien') {
-            ctx.fillStyle = '#78350f';
-            ctx.beginPath(); ctx.ellipse(-15, -4, 7, 13, 0.3, 0, Math.PI * 2); ctx.ellipse(15, -4, 7, 13, -0.3, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#fde68a';
-            ctx.beginPath(); ctx.arc(0, 2, 6, 0, Math.PI * 2); ctx.fill();
-          } else if (currentSkin === 'lapin') {
-            ctx.fillStyle = skinData.color;
-            ctx.beginPath(); ctx.ellipse(-8, -25, 5, 16, -0.1, 0, Math.PI * 2); ctx.ellipse(8, -25, 5, 16, 0.1, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#fce7f3';
-            ctx.beginPath(); ctx.ellipse(-8, -25, 3, 12, -0.1, 0, Math.PI * 2); ctx.ellipse(8, -25, 3, 12, 0.1, 0, Math.PI * 2); ctx.fill();
-          }
-
-          ctx.fillStyle = '#000';
-          ctx.beginPath(); ctx.arc(-6, -4, 3, 0, Math.PI * 2); ctx.arc(6, -4, 3, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = (currentSkin === 'chien') ? '#000' : '#f43f5e';
-          ctx.beginPath(); ctx.arc(0, -1, (currentSkin === 'chien') ? 3 : 2, 0, Math.PI * 2); ctx.fill();
-        }
-
-        ctx.restore();
-      }
-    };
-
-    function shootLaser() {
-      if (gameState === 'PLAYING' && boss.active && laserCooldown <= 0) {
-        lasers.push({ x: hamster.x, y: hamster.y, vy: -16 });
-        laserCooldown = 15;
-      }
-    }
-
-    class BubbleParticle {
-      constructor(x, y, vx, vy) {
-        this.x = x; this.y = y; this.vx = vx; this.vy = vy;
-        this.radius = Math.random() * 8 + 4;
-        this.alpha = 1;
-        this.color = Math.random() < 0.5 ? '#ffffff' : '#f43f5e';
-      }
-      update() { this.x += this.vx; this.y += this.vy; this.alpha -= 0.025; }
-      draw() {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, this.alpha);
-        ctx.fillStyle = this.color;
-        ctx.beginPath(); ctx.arc(this.x, this.y - cameraY, this.radius, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    class Seed {
-      constructor(x, y) {
-        this.x = x; this.y = y; this.radius = 8; this.collected = false;
-      }
-      draw() {
-        if (this.collected) return;
-        ctx.save();
-        ctx.translate(this.x, this.y - cameraY);
-        ctx.fillStyle = '#facc15'; ctx.strokeStyle = '#b45309'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.ellipse(0, 0, this.radius, this.radius * 1.3, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.restore();
-      }
-    }
-
-    class Platform {
-      constructor(x, y) {
-        this.x = x; this.y = y; this.w = 70; this.h = 15;
-      }
-      draw() {
-        ctx.save();
-        const inSpace = score >= 400;
-
-        if (inSpace) {
-          ctx.fillStyle = '#94a3b8'; ctx.fillRect(this.x, this.y - cameraY, this.w, 6);
-          ctx.fillStyle = '#475569'; ctx.fillRect(this.x, this.y - cameraY + 6, this.w, this.h - 6);
-          ctx.fillStyle = '#334155';
-          ctx.beginPath(); ctx.arc(this.x + 15, this.y - cameraY + 8, 3, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(this.x + 50, this.y - cameraY + 9, 4, 0, Math.PI * 2); ctx.fill();
-        } else {
-          ctx.fillStyle = '#84cc16'; ctx.fillRect(this.x, this.y - cameraY, this.w, 6);
-          ctx.fillStyle = '#78350f'; ctx.fillRect(this.x, this.y - cameraY + 6, this.w, this.h - 6);
-        }
-        ctx.restore();
-      }
-    }
-
-    function useJetpack() {
-      if (gameState === 'PLAYING' && hamster.jetpackCharges > 0 && hamster.jetpackActiveTimer <= 0) {
-        hamster.jetpackCharges--;
-        hamster.jetpackActiveTimer = 55;
-        updateJetpackUI();
-      }
-    }
-
-    function updateJetpackUI() {
-      if (hamster.jetpackCharges > 0) {
-        jetpackBtn.classList.remove('disabled');
-        jetpackBtn.innerHTML = `🥤 SODA MENTOS (${hamster.jetpackCharges}/2)`;
+    function buyRecipe(id) {
+      const recipe = RECIPES.find(r => r.id === id);
+      if (recipe && miams >= recipe.price) {
+        miams -= recipe.price;
+        recipe.unlocked = true;
+        updateUI();
       } else {
-        jetpackBtn.classList.add('disabled');
-        jetpackBtn.innerHTML = `🥤 ÉPUISÉ (0/2)`;
+        alert('Pas assez de Miams !');
       }
     }
 
-    function generateInitialPlatforms() {
-      platforms.length = 0;
-      seeds.length = 0;
-      platforms.push(new Platform(175, 480));
+    function buyBarista() {
+      if (miams >= 1067) {
+        miams -= 1067;
+        autoBaristaUnlocked = true;
+        updateUI();
+      } else {
+        alert('Il te faut 1067 Miams pour acheter le Robot Barista !');
+      }
+    }
 
-      let curY = 400;
-      while (curY > -1000) {
-        curY -= Math.random() * 50 + 40;
-        const x = Math.random() * (canvas.width - 80);
-        platforms.push(new Platform(x, curY));
+    function spawnCustomers() {
+      const unlockedRecipes = RECIPES.filter(r => r.unlocked);
 
-        if (Math.random() < 0.4) {
-          seeds.push(new Seed(x + 35, curY - 20));
+      tables.forEach(table => {
+        if (table.unlocked && !table.customer && Math.random() < 0.45) {
+          // Plus la réputation est haute, plus les VIP ont de chances de venir
+          let validCustomers = CUSTOMER_TYPES;
+          if (reputation < 2.0) {
+            validCustomers = CUSTOMER_TYPES.filter(c => !c.vip);
+          }
+          const randomType = validCustomers[Math.floor(Math.random() * validCustomers.length)];
+          const randomOrder = unlockedRecipes[Math.floor(Math.random() * unlockedRecipes.length)];
+
+          table.customer = {
+            name: randomType.name,
+            icon: randomType.icon,
+            multiplier: randomType.multiplier,
+            order: randomOrder,
+            state: 'waiting',
+            maxTime: 45,
+            timeLeft: 45
+          };
         }
+      });
+      updateUI();
+    }
+
+    function serveCustomer(tableId) {
+      const table = tables.find(t => t.id === tableId);
+      if (table && table.customer && table.customer.state === 'waiting') {
+        table.customer.state = 'eating';
+        updateUI();
+
+        setTimeout(() => {
+          if (table.customer) {
+            const baseGain = table.customer.order.reward * reputation * table.customer.multiplier;
+            const gain = Math.floor(baseGain);
+            miams += gain;
+
+            showFloatingText(`+${gain} 🌾`, tableId);
+            table.customer = null;
+            updateUI();
+          }
+        }, 1000);
       }
     }
 
-    function updateLevelGeneration() {
-      let highestY = Math.min(...platforms.map(p => p.y));
-
-      while (highestY > cameraY - 600) {
-        highestY -= Math.random() * 55 + 40;
-        const x = Math.random() * (canvas.width - 80);
-        platforms.push(new Platform(x, highestY));
-
-        if (Math.random() < 0.45) {
-          seeds.push(new Seed(x + 35, highestY - 20));
-        }
-      }
-
-      for (let i = platforms.length - 1; i >= 0; i--) {
-        if (platforms[i].y > cameraY + canvas.height + 100) platforms.splice(i, 1);
-      }
-      for (let i = seeds.length - 1; i >= 0; i--) {
-        if (seeds[i].y > cameraY + canvas.height + 100) seeds.splice(i, 1);
+    function showFloatingText(text, tableId) {
+      const tableCards = document.querySelectorAll('.table-card');
+      if (tableCards[tableId]) {
+        const el = document.createElement('div');
+        el.className = 'floating-text';
+        el.innerText = text;
+        el.style.left = '35%';
+        el.style.top = '25%';
+        tableCards[tableId].appendChild(el);
+        setTimeout(() => el.remove(), 1000);
       }
     }
 
-    function resetGame() {
-      score = 0;
-      cameraY = 0;
-      hasRevivedThisRun = false;
-      cinematicTimer = 0;
-      particles.length = 0;
-      lasers.length = 0;
-      fireworks.length = 0;
-      boss.reset();
-      hamster.reset();
-      generateInitialPlatforms();
-      gameState = 'PLAYING';
-      updateHUD();
-    }
+    // --- BOUCLE DU JEU (Chrono, Clients & Pénalités) ---
+    setInterval(() => {
+      spawnCustomers();
+    }, 2500);
 
-    function fallToZero() {
-      score = 0;
-      cameraY = 0;
-      hamster.reset();
-      boss.reset();
-      generateInitialPlatforms();
-    }
+    setInterval(() => {
+      tables.forEach(t => {
+        if (t.customer && t.customer.state === 'waiting') {
+          t.customer.timeLeft -= 1;
 
-    function triggerVictoryCinematic() {
-      gameState = 'CINEMATIC';
-      cinematicTimer = 0;
+          // Pénalité dans les 15 dernières secondes si non servi
+          if (t.customer.timeLeft === 15) {
+            showFloatingText('⚠️ S\'ÉNERVE !', t.id);
+          }
 
-      // Générer feux d'artifice
-      for(let i = 0; i < 80; i++) {
-        fireworks.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8,
-          color: `hsl(${Math.random() * 360}, 100%, 60%)`,
-          radius: Math.random() * 5 + 3
-        });
-      }
-    }
-
-    function gameLoop() {
-      if (gameState === 'PLAYING') {
-        hamster.update();
-        if (laserCooldown > 0) laserCooldown--;
-
-        if (hamster.y - cameraY < canvas.height * 0.4) {
-          cameraY = hamster.y - cameraY < canvas.height * 0.4 ? hamster.y - canvas.height * 0.4 : cameraY;
-        }
-
-        const currentScore = Math.floor(-cameraY / 10);
-        if (currentScore > score) score = currentScore;
-        scoreText.innerText = `SCORE: ${score}m`;
-
-        if (score > highScore) {
-          highScore = score;
-          saveData();
-        }
-
-        // --- ACTIVATION DU BOSS À 1000M ---
-        if (score >= 1000 && !boss.active) {
-          boss.active = true;
-          boss.timer = 25.0;
-          boss.hp = 3;
-        }
-
-        if (boss.active) {
-          boss.timer -= 1 / 60;
-          boss.y = cameraY + 120;
-
-          if (boss.flashTimer > 0) boss.flashTimer--;
-          if (boss.timer <= 0) fallToZero();
-
-          for (let i = lasers.length - 1; i >= 0; i--) {
-            const l = lasers[i];
-            l.y += l.vy;
-
-            const dist = Math.hypot(l.x - boss.x, l.y - boss.y);
-            if (dist < boss.radius + 10) {
-              boss.hp--;
-              boss.flashTimer = 10;
-              lasers.splice(i, 1);
-
-              if (boss.hp <= 0) triggerVictoryCinematic();
-              continue;
-            }
-
-            if (l.y < cameraY - 100) lasers.splice(i, 1);
+          if (t.customer.timeLeft <= 0) {
+            // Client mécontent : perte de réputation et de miams
+            miams = Math.max(0, miams - 10);
+            reputation = Math.max(0.5, reputation - 0.1);
+            showFloatingText('-10 🌾 😡', t.id);
+            t.customer = null;
+            updateUI();
           }
         }
-
-        hamster.isGrounded = false;
-        if (hamster.vy > 0) {
-          platforms.forEach(p => {
-            if (
-              hamster.x + hamster.radius > p.x &&
-              hamster.x - hamster.radius < p.x + p.w &&
-              hamster.y + hamster.radius >= p.y &&
-              hamster.y + hamster.radius <= p.y + p.h + hamster.vy
-            ) {
-              hamster.vy = -12;
-              hamster.isGrounded = true;
-            }
-          });
-        }
-
-        // Gain de Miams (Prend en compte le multiplicateur x2 !)
-        seeds.forEach(s => {
-          if (!s.collected) {
-            const dist = Math.hypot(hamster.x - s.x, hamster.y - s.y);
-            if (dist < hamster.radius + s.radius + 5) {
-              s.collected = true;
-              miamTotal += doubleMiamUnlocked ? 2 : 1;
-              saveData();
-            }
-          }
-        });
-
-        if (hamster.y - cameraY > canvas.height + 50) {
-          gameState = 'GAMEOVER';
-        }
-
-        updateLevelGeneration();
-
-        for (let i = particles.length - 1; i >= 0; i--) {
-          particles[i].update();
-          if (particles[i].alpha <= 0) particles.splice(i, 1);
-        }
-      }
-
-      // --- DESSIN DE FOND ---
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (score >= 400 || gameState === 'CINEMATIC') {
-        ctx.fillStyle = '#030712';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = '#ffffff';
-        stars.forEach(st => {
-          ctx.globalAlpha = 0.3 + Math.sin(Date.now() * 0.003 + st.x) * 0.3;
-          ctx.fillRect(st.x, st.y, st.size, st.size);
-        });
-        ctx.globalAlpha = 1;
-      } else {
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, '#38bdf8');
-        gradient.addColorStop(1, '#818cf8');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      if (gameState !== 'CINEMATIC') {
-        particles.forEach(p => p.draw());
-        platforms.forEach(p => p.draw());
-        seeds.forEach(s => s.draw());
-
-        ctx.fillStyle = '#22c55e';
-        ctx.shadowColor = '#22c55e';
-        ctx.shadowBlur = 10;
-        lasers.forEach(l => ctx.fillRect(l.x - 3, l.y - cameraY, 6, 20));
-        ctx.shadowBlur = 0;
-
-        if (boss.active) {
-          ctx.save();
-          ctx.translate(boss.x, boss.y - cameraY);
-
-          ctx.fillStyle = boss.flashTimer > 0 ? '#ef4444' : '#e2e8f0';
-          ctx.beginPath(); ctx.arc(0, 0, boss.radius, 0, Math.PI * 2); ctx.fill();
-
-          ctx.fillStyle = boss.flashTimer > 0 ? '#991b1b' : '#cbd5e1';
-          ctx.beginPath(); ctx.arc(-18, -15, 14, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(15, 10, 18, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(-10, 20, 10, 0, Math.PI * 2); ctx.fill();
-
-          ctx.fillStyle = '#000';
-          ctx.beginPath(); ctx.arc(-18, -5, 5, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(18, -5, 5, 0, Math.PI * 2); ctx.fill();
-
-          ctx.restore();
-
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#facc15';
-          ctx.font = '900 18px Arial';
-          ctx.fillText(`🌕 BOSS LUNE - PV : ${'❤️'.repeat(boss.hp)}`, canvas.width / 2, 85);
-
-          ctx.fillStyle = boss.timer < 5 ? '#ef4444' : '#ffffff';
-          ctx.font = 'bold 16px Arial';
-          ctx.fillText(`⏱️ TEMPS RESTANT : ${Math.max(0, boss.timer).toFixed(1)}s`, canvas.width / 2, 110);
-        }
-
-        hamster.draw();
-      }
-
-      if (gameState === 'GAMEOVER') drawGameOver();
-      if (gameState === 'CINEMATIC') drawCinematic();
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    function drawGameOver() {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#f43f5e';
-      ctx.font = '900 36px Arial';
-      ctx.fillText('GAME OVER !', canvas.width / 2, canvas.height / 2 - 90);
-
-      ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 22px Arial';
-      ctx.fillText(`🏆 Meilleur Score : ${highScore}m`, canvas.width / 2, canvas.height / 2 - 40);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 20px Arial';
-      ctx.fillText(`Score Actuel : ${score}m`, canvas.width / 2, canvas.height / 2 - 5);
-
-      if (!hasRevivedThisRun) {
-        if (miamTotal >= 50) {
-          ctx.fillStyle = '#22c55e';
-          ctx.font = '900 18px Arial';
-          ctx.fillText('✨ Appuie sur [R] pour REVIVRE (50 🌾)', canvas.width / 2, canvas.height / 2 + 50);
-        } else {
-          ctx.fillStyle = '#ef4444';
-          ctx.font = 'bold 15px Arial';
-          ctx.fillText('❌ Revive indisponible (Besoin de 50 🌾)', canvas.width / 2, canvas.height / 2 + 50);
-        }
-      } else {
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 15px Arial';
-        ctx.fillText('⚠️ Revive déjà utilisé pour cette partie !', canvas.width / 2, canvas.height / 2 + 50);
-      }
-
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '14px Arial';
-      ctx.fillText('Appuie sur ESPACE pour recommencer', canvas.width / 2, canvas.height / 2 + 95);
-    }
-
-    // --- CINÉMATIQUE ANIMÉE DE FIN (1000M) ---
-    function drawCinematic() {
-      cinematicTimer += 0.03;
-
-      // Feux d'artifice en mouvement
-      fireworks.forEach(f => {
-        f.x += f.vx;
-        f.y += f.vy;
-        ctx.fillStyle = f.color;
-        ctx.beginPath(); ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2); ctx.fill();
       });
 
-      // Hamster Volant / Flottant
-      ctx.save();
-      const heroY = canvas.height / 2 - 40 + Math.sin(cinematicTimer * 2) * 15;
-      ctx.translate(canvas.width / 2, heroY);
-
-      // Rayons de gloire dorés derrière le héros
-      ctx.strokeStyle = 'rgba(250, 204, 21, 0.4)';
-      ctx.lineWidth = 4;
-      for (let i = 0; i < 8; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        const angle = cinematicTimer + (i * Math.PI / 4);
-        ctx.lineTo(Math.cos(angle) * 120, Math.sin(angle) * 120);
-        ctx.stroke();
+      // Robot barista automatique
+      if (autoBaristaUnlocked) {
+        tables.forEach(t => {
+          if (t.unlocked && t.customer && t.customer.state === 'waiting') {
+            serveCustomer(t.id);
+          }
+        });
       }
 
-      // Dessin du Hamster Héros
-      ctx.fillStyle = '#d97706';
-      ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.fill();
+      updateUI();
+    }, 1000);
 
-      // Couronne Dorée
-      ctx.fillStyle = '#facc15';
-      ctx.beginPath();
-      ctx.moveTo(-20, -25); ctx.lineTo(-10, -45); ctx.lineTo(0, -30);
-      ctx.lineTo(10, -45); ctx.lineTo(20, -25);
-      ctx.closePath(); ctx.fill();
-
-      // Visage Joyeux
-      ctx.fillStyle = '#000';
-      ctx.beginPath(); ctx.arc(-10, -5, 4, 0, Math.PI * 2); ctx.arc(10, -5, 4, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(0, 5, 8, 0, Math.PI); ctx.stroke();
-
-      ctx.restore();
-
-      // Textes Épiques
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#facc15';
-      ctx.font = '900 32px Arial';
-      ctx.fillText('👑 HÉROS DE LA GALAXIE ! 👑', canvas.width / 2, 100);
-
-      ctx.fillStyle = '#22c55e';
-      ctx.font = 'bold 20px Arial';
-      ctx.fillText('LA LUNE A ÉTÉ DÉTRUITE À 1000M !', canvas.width / 2, 140);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '18px Arial';
-      ctx.fillText(`🌾 Miams Totaux Récoltés : ${miamTotal}`, canvas.width / 2, canvas.height - 120);
-
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = 'bold 15px Arial';
-      ctx.fillText('Appuie sur ESPACE pour rejouer !', canvas.width / 2, canvas.height - 70);
-    }
-
-    saveData();
-    resetGame();
-    requestAnimationFrame(gameLoop);
+    updateUI();
   </script>
 </body>
 </html>
